@@ -1,5 +1,16 @@
 {
   "tasks": {
     "dev": "deno run --watch mod.ts"
+  },
+
+  "fmt": {
+    "options": {
+      "useTabs": false,
+      "lineWidth": 80,
+      "indentWidth": 2,
+      "singleQuote": true,
+      "proseWrap": "preserve",
+      "semiColons": true
+    }
   }
 }
