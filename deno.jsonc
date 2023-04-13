@@ -1,12 +1,14 @@
 {
   "tasks": {
-    "dev": "deno run --watch mod.ts"
+    "dev": "deno run --watch mod.ts",
+    "fmt": "deno fmt",
+    "build": "deno compile --unstable --allow-net --allow-read --allow-write --output=bin/mod mod.ts"
   },
 
   "fmt": {
     "options": {
       "useTabs": false,
-      "lineWidth": 80,
+      "lineWidth": 120,
       "indentWidth": 2,
       "singleQuote": true,
       "proseWrap": "preserve",

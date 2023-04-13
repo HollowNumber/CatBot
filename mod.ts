@@ -1,27 +1,60 @@
 #! /usr/bin/env -S deno run --allow-env --allow-read --allow-net --unstable
 /** Discord */
-import { createBot, Intents, startBot } from './deps.ts';
+import {
+  ActivityTypes,
+  createBot,
+  enableCachePlugin,
+  enableCacheSweepers,
+  fastFileLoader,
+  GatewayIntents,
+  startBot,
+} from './deps.ts';
 
-/** Dotenv */
-import { load } from './deps.ts';
+/** Config */
+import { BOT_ID, BOT_TOKEN, INTENTS } from './src/config.ts';
 
-if (import.meta.main) {
-  const env = await load();
-  const TOKEN = env['DISCORD_API_TOKEN'];
-  if (!TOKEN) {
-    console.error('No token provided');
-    Deno.exit(1);
-  }
+/** events */
+import { events } from './src/events/mod.ts';
 
-  const bot = createBot({
-    token: TOKEN,
-    intents: Intents.All,
-    events: {
-      ready() {
-        console.log('Bot is ready!');
+/** utils */
+import { logger } from './src/util/logger.ts';
+import { updateCommands } from './src/util/helpers.ts';
+
+const log = logger({ name: 'Main' });
+
+const paths = ['./src/events', './src/commands'];
+await fastFileLoader(paths).catch((err) => {
+  log.fatal(`Unable to Import ${paths}`);
+  log.fatal(err);
+  Deno.exit(1);
+});
+
+export const bot = enableCachePlugin(
+  createBot({
+    token: BOT_TOKEN,
+    botId: BOT_ID,
+    intents: GatewayIntents.Guilds,
+    events,
+  }),
+);
+
+// @ts-nocheck: no-updated-depencdencies
+enableCacheSweepers(bot);
+
+bot.gateway.manager.createShardOptions.makePresence = (shardId: number) => {
+  return {
+    shardId,
+    status: 'online',
+    activities: [
+      {
+        name: 'Watching Lidl for any changes',
+        type: ActivityTypes.Game,
+        createdAt: Date.now(),
       },
-    },
-  });
+    ],
+  };
+};
 
-  startBot(bot);
-}
+await startBot(bot);
+
+await updateCommands(bot);
